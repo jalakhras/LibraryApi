@@ -25,11 +25,7 @@ namespace Library.API.Controllers
             _mapper = mapper;
         }
 
-        /// <summary>
-        /// Get an author by his/her id
-        /// </summary>
-        /// <param name="authorId">The id of the author you want to get</param>
-        /// <returns>An ActionResult of type Author</returns>
+       
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Author>>> GetAuthors()
         {
@@ -37,6 +33,11 @@ namespace Library.API.Controllers
             return Ok(_mapper.Map<IEnumerable<Author>>(authorsFromRepo));
         }
 
+        /// <summary>
+        /// Get an author by his/her id
+        /// </summary>
+        /// <param name="authorId">The id of the author you want to get</param>
+        /// <returns>An ActionResult of type Author</returns>
         [HttpGet("{authorId}")]
         public async Task<ActionResult<Author>> GetAuthor(
             Guid authorId)

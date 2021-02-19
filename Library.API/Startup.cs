@@ -8,7 +8,10 @@ using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using System;
+using System.IO;
 using System.Linq;
+using System.Reflection;
 
 namespace Library.API
 {
@@ -84,6 +87,9 @@ namespace Library.API
                         Title = "Library API",
                         Version = "1"
                     });
+                var xmlCommentsFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlcommentFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
+                setupAction.IncludeXmlComments(xmlcommentFullPath);
             });
         }
 
@@ -109,6 +115,8 @@ namespace Library.API
                     "/swagger/LibraryOpenAPISpecification/swagger.json",
                     "Library API");
                 setupAction.RoutePrefix = "";
+
+            
             });
             app.UseStaticFiles();
 
