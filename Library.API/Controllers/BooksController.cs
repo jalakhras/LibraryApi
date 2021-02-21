@@ -11,6 +11,9 @@ namespace Library.API.Controllers
 {
     [Route("api/authors/{authorId}/books")]
     [ApiController]
+    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
     public class BooksController : ControllerBase
     { 
         private readonly IBookRepository _bookRepository;
@@ -28,6 +31,9 @@ namespace Library.API.Controllers
         }
        
         [HttpGet()]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesDefaultResponseType]
         public async Task<ActionResult<IEnumerable<Book>>> GetBooks(
         Guid authorId )
         {
@@ -41,9 +47,8 @@ namespace Library.API.Controllers
         }
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        [ProducesResponseType(StatusCodes.Status200OK,Type =typeof(Book))]
         [HttpGet("{bookId}")]
-        public async Task<IActionResult> GetBook(
+        public async Task<ActionResult<Book>> GetBook(
             Guid authorId,
             Guid bookId)
         {

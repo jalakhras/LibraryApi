@@ -17,9 +17,9 @@ namespace Library.API
                 throw new ArgumentNullException("items");
             }
 
-            if (list is List<T>)
+            if (list is List<T> list1)
             {
-                ((List<T>)list).AddRange(items);
+                list1.AddRange(items);
             }
             else
             {
