@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Mvc;
 using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
+using Microsoft.AspNetCore.Http;
 
 namespace Library.API.Controllers
 {
@@ -38,9 +39,11 @@ namespace Library.API.Controllers
             var booksFromRepo = await _bookRepository.GetBooksAsync(authorId); 
             return Ok(_mapper.Map<IEnumerable<Book>>(booksFromRepo));
         }
-
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status200OK,Type =typeof(Book))]
         [HttpGet("{bookId}")]
-        public async Task<ActionResult<Book>> GetBook(
+        public async Task<IActionResult> GetBook(
             Guid authorId,
             Guid bookId)
         {
