@@ -13,9 +13,7 @@ namespace Library.API.Controllers
 
     [Route("api/authors")]
     [ApiController]
-    [ProducesResponseType(StatusCodes.Status404NotFound)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
-    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
+    
 
     public class AuthorsController : ControllerBase
     {

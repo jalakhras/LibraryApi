@@ -11,9 +11,7 @@ namespace Library.API.Controllers
 {
     [Route("api/authors/{authorId}/books")]
     [ApiController]
-    [ProducesResponseType(StatusCodes.Status406NotAcceptable)]
-    [ProducesResponseType(StatusCodes.Status400BadRequest)]
-    [ProducesResponseType(StatusCodes.Status500InternalServerError)]
+
     public class BooksController : ControllerBase
     { 
         private readonly IBookRepository _bookRepository;
