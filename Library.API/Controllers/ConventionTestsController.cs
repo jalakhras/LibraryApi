@@ -10,7 +10,7 @@ namespace Library.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    [ApiConventionType(typeof(DefaultApiConventions))]
+    //[ApiConventionType(typeof(DefaultApiConventions))]
     public class ConventionTestsController : ControllerBase
     {
         // GET: api/<ConventionTestsController>

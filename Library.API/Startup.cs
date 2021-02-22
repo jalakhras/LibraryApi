@@ -14,6 +14,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
+[assembly:ApiConventionType(typeof(DefaultApiConventions))]
 namespace Library.API
 {
     public class Startup
