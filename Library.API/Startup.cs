@@ -30,12 +30,12 @@ namespace Library.API
         {
             services.AddMvc(setupAction =>
             {
-                setupAction.Filters.Add(
-                    new ProducesResponseTypeAttribute(StatusCodes.Status400BadRequest));
-                setupAction.Filters.Add(
-                    new ProducesResponseTypeAttribute(StatusCodes.Status406NotAcceptable));  
-                setupAction.Filters.Add(
-                    new ProducesResponseTypeAttribute(StatusCodes.Status500InternalServerError));
+                //setupAction.Filters.Add(
+                //    new ProducesResponseTypeAttribute(StatusCodes.Status400BadRequest));
+                //setupAction.Filters.Add(
+                //    new ProducesResponseTypeAttribute(StatusCodes.Status406NotAcceptable));  
+                //setupAction.Filters.Add(
+                //    new ProducesResponseTypeAttribute(StatusCodes.Status500InternalServerError));
 
                 setupAction.ReturnHttpNotAcceptable = true;
 
