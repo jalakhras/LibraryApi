@@ -38,8 +38,8 @@ namespace Library.API
                 //setupAction.Filters.Add(
                 //    new ProducesResponseTypeAttribute(StatusCodes.Status500InternalServerError));
 
-                setupAction.ReturnHttpNotAcceptable = true;
-
+                setupAction.ReturnHttpNotAcceptable = true; // For Status406NotAcceptable
+                setupAction.OutputFormatters.Add(new XmlSerializerOutputFormatter());
                 var jsonOutputFormatter = setupAction.OutputFormatters
                     .OfType<JsonOutputFormatter>().FirstOrDefault();
 
