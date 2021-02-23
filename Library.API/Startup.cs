@@ -204,6 +204,9 @@ namespace Library.API
 
             app.UseSwaggerUI(setupAction =>
             {
+                setupAction.InjectStylesheet("/Assets/custom-ui.css");
+               
+
                 foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
                 {
                     setupAction.SwaggerEndpoint($"/swagger/" +
