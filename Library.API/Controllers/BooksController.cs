@@ -100,7 +100,14 @@ namespace Library.API.Controllers
             return Ok(_mapper.Map<BookWithConcatenatedAuthorName>(bookFromRepo));
         }
         [HttpPost()]
-        [Consumes("application/json")]
+        [Consumes("application/json", "application/vnd.marvin.bookforcreation+json")]
+        [RequestHeaderMatchesMediaType(HeaderNames.ContentType,
+          "application/json", "application/vnd.marvin.bookforcreation+json")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity,
+           Type = typeof(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary))]
+
         public async Task<ActionResult<Book>> CreateBook(
             Guid authorId,
             [FromBody] BookForCreation bookForCreation)
@@ -111,6 +118,41 @@ namespace Library.API.Controllers
             }
 
             var bookToAdd = _mapper.Map<Entities.Book>(bookForCreation);
+            _bookRepository.AddBook(bookToAdd);
+            await _bookRepository.SaveChangesAsync();
+
+            return CreatedAtRoute(
+                "GetBook",
+                new { authorId, bookId = bookToAdd.Id },
+                _mapper.Map<Book>(bookToAdd));
+        }
+
+        /// <summary>
+        /// Create a book for a specific author
+        /// </summary>
+        /// <param name="authorId">The id of the book author</param>
+        /// <param name="bookForCreationWithAmountOfPages">The book to create</param>
+        /// <returns>An ActionResult of type Book</returns>
+        /// <response code="422">Validation error</response>
+        [HttpPost()]
+        [Consumes("application/vnd.marvin.bookforcreationwithamountofpages+json")]
+        [RequestHeaderMatchesMediaType(HeaderNames.ContentType,
+            "application/vnd.marvin.bookforcreationwithamountofpages+json")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status422UnprocessableEntity,
+            Type = typeof(Microsoft.AspNetCore.Mvc.ModelBinding.ModelStateDictionary))]
+        [ApiExplorerSettings(IgnoreApi = true)]
+        public async Task<ActionResult<Book>> CreateBookWithAmountOfPages(
+          Guid authorId,
+          [FromBody] BookForCreationWithAmountOfPages bookForCreationWithAmountOfPages)
+        {
+            if (!await _authorRepository.AuthorExistsAsync(authorId))
+            {
+                return NotFound();
+            }
+
+            var bookToAdd = _mapper.Map<Entities.Book>(bookForCreationWithAmountOfPages);
             _bookRepository.AddBook(bookToAdd);
             await _bookRepository.SaveChangesAsync();
 
