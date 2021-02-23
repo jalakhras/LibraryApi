@@ -67,6 +67,7 @@ namespace Library.API.Controllers
 
 
         [HttpPost()]
+        [Consumes("application/json")]
         public async Task<ActionResult<Book>> CreateBook(
             Guid authorId,
             [FromBody] BookForCreation bookForCreation)
