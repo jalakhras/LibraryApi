@@ -30,6 +30,7 @@
             ] \
             </remarks>
         </member>
+        <!-- Badly formed XML comment ignored for member "M:Library.API.Controllers.BooksController.GetBookWithConcatenatedAuthorName(System.Guid,System.Guid)" -->
         <member name="T:Library.API.Models.Author">
             <summary>
             An author with Id, FirstName and LastName fields
