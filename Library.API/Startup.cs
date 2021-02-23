@@ -205,7 +205,9 @@ namespace Library.API
             app.UseSwaggerUI(setupAction =>
             {
                 setupAction.InjectStylesheet("/Assets/custom-ui.css");
-               
+                setupAction.IndexStream = ()
+                        => GetType().Assembly
+                        .GetManifestResourceStream("Library.API.EmbeddedAssets.index.html");
 
                 foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
                 {
