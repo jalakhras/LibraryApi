@@ -1,18 +1,24 @@
 ﻿using AutoMapper;
+using Library.API.Authentication;
 using Library.API.Contexts;
 using Library.API.OperationFilters;
 using Library.API.Services;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Abstractions;
 using Microsoft.AspNetCore.Mvc.ApiExplorer;
+using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.AspNetCore.Mvc.Formatters;
 using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.OpenApi.Models;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
@@ -35,15 +41,18 @@ namespace Library.API
         {
             services.AddMvc(setupAction =>
             {
-                //setupAction.Filters.Add(
-                //    new ProducesResponseTypeAttribute(StatusCodes.Status400BadRequest));
-                //setupAction.Filters.Add(
-                //    new ProducesResponseTypeAttribute(StatusCodes.Status406NotAcceptable));
-                //setupAction.Filters.Add(
-                //    new ProducesResponseTypeAttribute(StatusCodes.Status500InternalServerError));
-
+                setupAction.Filters.Add(
+                    new ProducesResponseTypeAttribute(StatusCodes.Status400BadRequest));
+                setupAction.Filters.Add(
+                    new ProducesResponseTypeAttribute(StatusCodes.Status406NotAcceptable));
+                setupAction.Filters.Add(
+                    new ProducesResponseTypeAttribute(StatusCodes.Status500InternalServerError));
+                setupAction.Filters.Add(
+                    new ProducesResponseTypeAttribute(StatusCodes.Status401Unauthorized));
+                setupAction.Filters.Add(new AuthorizeFilter());
                 setupAction.ReturnHttpNotAcceptable = true; // For Status406NotAcceptable
                 setupAction.OutputFormatters.Add(new XmlSerializerOutputFormatter());
+
                 var jsonOutputFormatter = setupAction.OutputFormatters
                     .OfType<JsonOutputFormatter>().FirstOrDefault();
 
@@ -94,6 +103,8 @@ namespace Library.API
             {
                 setupAction.GroupNameFormat = "'v'VV";
             });
+            services.AddAuthentication("Basic")
+                .AddScheme<AuthenticationSchemeOptions, BasicAuthenticationHandler>("Basic", null);
             services.AddApiVersioning(setupActions =>
             {
                 setupActions.AssumeDefaultVersionWhenUnspecified = true;
@@ -104,12 +115,14 @@ namespace Library.API
             });
 
             var apiVersionDescriptionProvider = services.BuildServiceProvider().GetService<IApiVersionDescriptionProvider>();
-            foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
-            {
-                services.AddSwaggerGen(setupAction =>
+
+            services.AddSwaggerGen(setupAction =>
+              {
+
+                  foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
                   {
                       setupAction.SwaggerDoc($"LibraryOpenAPISpecification{description.GroupName}",
-                          new Microsoft.OpenApi.Models.OpenApiInfo()
+                          new OpenApiInfo()
                           {
                               Title = "Library API",
                               Version = description.ApiVersion.ToString(),
@@ -126,13 +139,8 @@ namespace Library.API
                                   Url = new Uri("https://opensource.org/licenses/MIT")
                               }
                           });
-                      //setupAction.ResolveConflictingActions(apiDescriptions =>
-                      //{
-                      //    //var firstDescriptions = apiDescriptions.First();
-                      //    //var secondDescriptions = apiDescriptions.ElementAt(1);
-                      //    //firstDescriptions.SupportedResponseTypes.AddRange(secondDescriptions.SupportedResponseTypes.Where(a => a.StatusCode == 200));
-                      //    return apiDescriptions.First();
-                      //});
+
+
                       setupAction.DocInclusionPredicate((documentName, apiDescription) =>
                       {
                           var actionApiVersionModel = apiDescription.ActionDescriptor
@@ -156,8 +164,25 @@ namespace Library.API
                       var xmlCommentsFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
                       var xmlcommentFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
                       setupAction.IncludeXmlComments(xmlcommentFullPath);
+                  }
+                  setupAction.AddSecurityDefinition("basicAuth", new OpenApiSecurityScheme()
+                  {
+                      Type = SecuritySchemeType.Http,
+                      Scheme = "basic",
+                      Description = "Input your username and password to access this API"
                   });
-            }
+                  setupAction.AddSecurityRequirement(new OpenApiSecurityRequirement
+                {
+                    {
+                        new OpenApiSecurityScheme
+                        {
+                            Reference = new OpenApiReference {
+                                Type = ReferenceType.SecurityScheme,
+                                Id = "basicAuth" }
+                        }, new List<string>() }
+                });
+              });
+
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
@@ -193,7 +218,7 @@ namespace Library.API
                 setupAction.RoutePrefix = "";
             });
             app.UseStaticFiles();
-
+            app.UseAuthentication();
             app.UseMvc();
         }
     }
