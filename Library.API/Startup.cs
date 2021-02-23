@@ -90,12 +90,45 @@ namespace Library.API
             services.AddAutoMapper();
             services.AddSwaggerGen(setupAction =>
             {
-                setupAction.SwaggerDoc("LibraryOpenAPISpecification",
+                setupAction.SwaggerDoc("LibraryOpenAPISpecificationAuthors",
                     new Microsoft.OpenApi.Models.OpenApiInfo()
                     {
-                        Title = "Library API",
+                        Title = "Library API (Authors)",
                         Version = "1",
-                        Description = "Through this API you can access authors and their books.",
+                        Description = "Through this API you can access authors.",
+                        Contact = new Microsoft.OpenApi.Models.OpenApiContact()
+                        {
+                            Email = "Jassar1994@gmail.com",
+                            Name = "Jassar Mahmoud",
+                            Url = new Uri("https://www.twitter.com/Jassar_mah")
+                        },
+                        License = new Microsoft.OpenApi.Models.OpenApiLicense()
+                        {
+                            Name = "MIT License",
+                            Url = new Uri("https://opensource.org/licenses/MIT")
+                        }
+                    });
+                //setupAction.ResolveConflictingActions(apiDescriptions =>
+                //{
+                //    //var firstDescriptions = apiDescriptions.First();
+                //    //var secondDescriptions = apiDescriptions.ElementAt(1);
+                //    //firstDescriptions.SupportedResponseTypes.AddRange(secondDescriptions.SupportedResponseTypes.Where(a => a.StatusCode == 200));
+                //    return apiDescriptions.First();
+                //});
+                setupAction.OperationFilter<GetBookOperationFilter>();
+                setupAction.OperationFilter<CreateBookOperationFilter>();
+                var xmlCommentsFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                var xmlcommentFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
+                setupAction.IncludeXmlComments(xmlcommentFullPath);
+            });
+            services.AddSwaggerGen(setupAction =>
+            {
+                setupAction.SwaggerDoc("LibraryOpenAPISpecificationBooks",
+                    new Microsoft.OpenApi.Models.OpenApiInfo()
+                    {
+                        Title = "Library API (Books)",
+                        Version = "1",
+                        Description = "Through this API you can access Books.",
                         Contact = new Microsoft.OpenApi.Models.OpenApiContact()
                         {
                             Email = "Jassar1994@gmail.com",
@@ -141,9 +174,8 @@ namespace Library.API
             app.UseSwagger();
             app.UseSwaggerUI(setupAction =>
             {
-                setupAction.SwaggerEndpoint(
-                    "/swagger/LibraryOpenAPISpecification/swagger.json",
-                    "Library API");
+                setupAction.SwaggerEndpoint( "/swagger/LibraryOpenAPISpecificationAuthors/swagger.json", "Library API (Authors)");
+                setupAction.SwaggerEndpoint( "/swagger/LibraryOpenAPISpecificationBooks/swagger.json", "Library API (Books)");
                 setupAction.RoutePrefix = "";
 
             

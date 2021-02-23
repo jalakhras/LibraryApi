@@ -10,11 +10,9 @@ using System.Threading.Tasks;
 
 namespace Library.API.Controllers
 {
-
     [Route("api/authors")]
     [ApiController]
-    
-
+    [ApiExplorerSettings(GroupName = "LibraryOpenAPISpecificationAuthors")]
     public class AuthorsController : ControllerBase
     {
         private readonly IAuthorRepository _authorsRepository;
@@ -28,7 +26,6 @@ namespace Library.API.Controllers
             _mapper = mapper;
         }
 
-       
         [HttpGet]
         public async Task<ActionResult<IEnumerable<Author>>> GetAuthors()
         {
@@ -75,7 +72,7 @@ namespace Library.API.Controllers
             await _authorsRepository.SaveChangesAsync();
 
             // return the author
-            return Ok(_mapper.Map<Author>(authorFromRepo)); 
+            return Ok(_mapper.Map<Author>(authorFromRepo));
         }
 
         /// <summary>
@@ -85,7 +82,7 @@ namespace Library.API.Controllers
         /// <param name="patchDocument">The set of operations to apply to the author</param>
         /// <returns>An ActionResult of type Author</returns>
         /// <remarks>
-        /// Sample request (this request updates the author's first name) \ 
+        /// Sample request (this request updates the author's first name) \
         /// PATCH /authors/id \
         /// [ \
         ///     { \
@@ -110,7 +107,7 @@ namespace Library.API.Controllers
             var author = _mapper.Map<AuthorForUpdate>(authorFromRepo);
             patchDocument.ApplyTo(author, ModelState);
 
-            // if there are errors when applying the patch the patch doc 
+            // if there are errors when applying the patch the patch doc
             // was badly formed  These aren't caught via the ApiController
             // validation, so we must manually check the modelstate and
             // potentially return these errors.
