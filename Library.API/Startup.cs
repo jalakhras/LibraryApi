@@ -1,13 +1,14 @@
 ﻿using AutoMapper;
 using Library.API.Contexts;
-using Library.API.Models;
 using Library.API.OperationFilters;
 using Library.API.Services;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Mvc.Abstractions;
+using Microsoft.AspNetCore.Mvc.ApiExplorer;
 using Microsoft.AspNetCore.Mvc.Formatters;
+using Microsoft.AspNetCore.Mvc.Versioning;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -16,7 +17,8 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-[assembly:ApiConventionType(typeof(DefaultApiConventions))]
+[assembly: ApiConventionType(typeof(DefaultApiConventions))]
+
 namespace Library.API
 {
     public class Startup
@@ -36,7 +38,7 @@ namespace Library.API
                 //setupAction.Filters.Add(
                 //    new ProducesResponseTypeAttribute(StatusCodes.Status400BadRequest));
                 //setupAction.Filters.Add(
-                //    new ProducesResponseTypeAttribute(StatusCodes.Status406NotAcceptable));  
+                //    new ProducesResponseTypeAttribute(StatusCodes.Status406NotAcceptable));
                 //setupAction.Filters.Add(
                 //    new ProducesResponseTypeAttribute(StatusCodes.Status500InternalServerError));
 
@@ -62,7 +64,7 @@ namespace Library.API
             // it's better to store the connection string in an environment variable)
             var connectionString = Configuration["ConnectionStrings:LibraryDBConnectionString"];
             services.AddDbContext<LibraryContext>(o => o.UseSqlServer(connectionString));
-            
+
             services.Configure<ApiBehaviorOptions>(options =>
             {
                 options.InvalidModelStateResponseFactory = actionContext =>
@@ -88,76 +90,78 @@ namespace Library.API
             services.AddScoped<IAuthorRepository, AuthorRepository>();
 
             services.AddAutoMapper();
-            services.AddSwaggerGen(setupAction =>
+            services.AddVersionedApiExplorer(setupAction =>
             {
-                setupAction.SwaggerDoc("LibraryOpenAPISpecificationAuthors",
-                    new Microsoft.OpenApi.Models.OpenApiInfo()
-                    {
-                        Title = "Library API (Authors)",
-                        Version = "1",
-                        Description = "Through this API you can access authors.",
-                        Contact = new Microsoft.OpenApi.Models.OpenApiContact()
-                        {
-                            Email = "Jassar1994@gmail.com",
-                            Name = "Jassar Mahmoud",
-                            Url = new Uri("https://www.twitter.com/Jassar_mah")
-                        },
-                        License = new Microsoft.OpenApi.Models.OpenApiLicense()
-                        {
-                            Name = "MIT License",
-                            Url = new Uri("https://opensource.org/licenses/MIT")
-                        }
-                    });
-                //setupAction.ResolveConflictingActions(apiDescriptions =>
-                //{
-                //    //var firstDescriptions = apiDescriptions.First();
-                //    //var secondDescriptions = apiDescriptions.ElementAt(1);
-                //    //firstDescriptions.SupportedResponseTypes.AddRange(secondDescriptions.SupportedResponseTypes.Where(a => a.StatusCode == 200));
-                //    return apiDescriptions.First();
-                //});
-                setupAction.OperationFilter<GetBookOperationFilter>();
-                setupAction.OperationFilter<CreateBookOperationFilter>();
-                var xmlCommentsFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlcommentFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
-                setupAction.IncludeXmlComments(xmlcommentFullPath);
+                setupAction.GroupNameFormat = "'v'VV";
             });
-            services.AddSwaggerGen(setupAction =>
+            services.AddApiVersioning(setupActions =>
             {
-                setupAction.SwaggerDoc("LibraryOpenAPISpecificationBooks",
-                    new Microsoft.OpenApi.Models.OpenApiInfo()
-                    {
-                        Title = "Library API (Books)",
-                        Version = "1",
-                        Description = "Through this API you can access Books.",
-                        Contact = new Microsoft.OpenApi.Models.OpenApiContact()
-                        {
-                            Email = "Jassar1994@gmail.com",
-                            Name = "Jassar Mahmoud",
-                            Url = new Uri("https://www.twitter.com/Jassar_mah")
-                        },
-                        License = new Microsoft.OpenApi.Models.OpenApiLicense()
-                        {
-                            Name = "MIT License",
-                            Url = new Uri("https://opensource.org/licenses/MIT")
-                        }
-                    });
-                //setupAction.ResolveConflictingActions(apiDescriptions =>
-                //{
-                //    //var firstDescriptions = apiDescriptions.First();
-                //    //var secondDescriptions = apiDescriptions.ElementAt(1);
-                //    //firstDescriptions.SupportedResponseTypes.AddRange(secondDescriptions.SupportedResponseTypes.Where(a => a.StatusCode == 200));
-                //    return apiDescriptions.First();
-                //});
-                setupAction.OperationFilter<GetBookOperationFilter>();
-                setupAction.OperationFilter<CreateBookOperationFilter>();
-                var xmlCommentsFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
-                var xmlcommentFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
-                setupAction.IncludeXmlComments(xmlcommentFullPath);
+                setupActions.AssumeDefaultVersionWhenUnspecified = true;
+                setupActions.DefaultApiVersion = new ApiVersion(1, 0);
+                setupActions.ReportApiVersions = true;
+                //setupActions.ApiVersionReader = new HeaderApiVersionReader("api-version");
+                //setupActions.ApiVersionReader = new MediaTypeApiVersionReader();
             });
+
+            var apiVersionDescriptionProvider = services.BuildServiceProvider().GetService<IApiVersionDescriptionProvider>();
+            foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
+            {
+                services.AddSwaggerGen(setupAction =>
+                  {
+                      setupAction.SwaggerDoc($"LibraryOpenAPISpecification{description.GroupName}",
+                          new Microsoft.OpenApi.Models.OpenApiInfo()
+                          {
+                              Title = "Library API",
+                              Version = description.ApiVersion.ToString(),
+                              Description = "Through this API you can access authors and books.",
+                              Contact = new Microsoft.OpenApi.Models.OpenApiContact()
+                              {
+                                  Email = "Jassar1994@gmail.com",
+                                  Name = "Jassar Mahmoud",
+                                  Url = new Uri("https://www.twitter.com/Jassar_mah")
+                              },
+                              License = new Microsoft.OpenApi.Models.OpenApiLicense()
+                              {
+                                  Name = "MIT License",
+                                  Url = new Uri("https://opensource.org/licenses/MIT")
+                              }
+                          });
+                      //setupAction.ResolveConflictingActions(apiDescriptions =>
+                      //{
+                      //    //var firstDescriptions = apiDescriptions.First();
+                      //    //var secondDescriptions = apiDescriptions.ElementAt(1);
+                      //    //firstDescriptions.SupportedResponseTypes.AddRange(secondDescriptions.SupportedResponseTypes.Where(a => a.StatusCode == 200));
+                      //    return apiDescriptions.First();
+                      //});
+                      setupAction.DocInclusionPredicate((documentName, apiDescription) =>
+                      {
+                          var actionApiVersionModel = apiDescription.ActionDescriptor
+                          .GetApiVersionModel(ApiVersionMapping.Explicit | ApiVersionMapping.Implicit);
+
+                          if (actionApiVersionModel == null)
+                          {
+                              return true;
+                          }
+
+                          if (actionApiVersionModel.DeclaredApiVersions.Any())
+                          {
+                              return actionApiVersionModel.DeclaredApiVersions.Any(v =>
+                              $"LibraryOpenAPISpecificationv{v.ToString()}" == documentName);
+                          }
+                          return actionApiVersionModel.ImplementedApiVersions.Any(v =>
+                              $"LibraryOpenAPISpecificationv{v.ToString()}" == documentName);
+                      });
+                      setupAction.OperationFilter<GetBookOperationFilter>();
+                      setupAction.OperationFilter<CreateBookOperationFilter>();
+                      var xmlCommentsFile = $"{Assembly.GetExecutingAssembly().GetName().Name}.xml";
+                      var xmlcommentFullPath = Path.Combine(AppContext.BaseDirectory, xmlCommentsFile);
+                      setupAction.IncludeXmlComments(xmlcommentFullPath);
+                  });
+            }
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.
-        public void Configure(IApplicationBuilder app, IHostingEnvironment env)
+        public void Configure(IApplicationBuilder app, IHostingEnvironment env, IApiVersionDescriptionProvider apiVersionDescriptionProvider)
         {
             if (env.IsDevelopment())
             {
@@ -165,20 +169,28 @@ namespace Library.API
             }
             else
             {
-                // The default HSTS value is 30 days. 
+                // The default HSTS value is 30 days.
                 // You may want to change this for production scenarios, see https://aka.ms/aspnetcore-hsts.
                 app.UseHsts();
             }
 
             app.UseHttpsRedirection();
             app.UseSwagger();
+
             app.UseSwaggerUI(setupAction =>
             {
-                setupAction.SwaggerEndpoint( "/swagger/LibraryOpenAPISpecificationAuthors/swagger.json", "Library API (Authors)");
-                setupAction.SwaggerEndpoint( "/swagger/LibraryOpenAPISpecificationBooks/swagger.json", "Library API (Books)");
-                setupAction.RoutePrefix = "";
+                foreach (var description in apiVersionDescriptionProvider.ApiVersionDescriptions)
+                {
+                    setupAction.SwaggerEndpoint($"/swagger/" +
+                        $"LibraryOpenAPISpecification{description.GroupName}/swagger.json",
+                        description.GroupName.ToUpperInvariant());
+                }
 
-            
+                //setupAction.SwaggerEndpoint(
+                //    "/swagger/LibraryOpenAPISpecification/swagger.json",
+                //    "Library API");
+
+                setupAction.RoutePrefix = "";
             });
             app.UseStaticFiles();
 
