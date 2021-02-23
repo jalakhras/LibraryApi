@@ -219,6 +219,7 @@ namespace Library.API
                 setupAction.DefaultModelExpandDepth(2);
                 setupAction.DefaultModelRendering(Swashbuckle.AspNetCore.SwaggerUI.ModelRendering.Model);
                 setupAction.DocExpansion(Swashbuckle.AspNetCore.SwaggerUI.DocExpansion.None);
+                setupAction.EnableDeepLinking();
                 setupAction.DisplayOperationId();
             });
             app.UseStaticFiles();
